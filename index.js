@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
 
     const bookCollection = client.db('bookDB').collection('book');
+    const borrowCollection = client.db('bookDB').collection('borrowBook');
 
     app.get('/book', async (req, res) => {
       const cursor = bookCollection.find();
@@ -49,6 +50,7 @@ async function run() {
       res.send(result);
     })
 
+    // update book 
     app.put('/book/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -69,7 +71,28 @@ async function run() {
       const result = await bookCollection.updateOne(filter, book, options);
       res.send(result);
     })
-    // name, Author, Category, Quantity, Date, rating, discriptions, photoURL 
+  
+    // borrow collection 
+
+    app.get('/borrowings', async(req, res) => {
+      console.log(req.query.email);
+      let query = {};
+      if(req.query?.email){
+        query = { email: req.query.email } 
+      }
+      const result = await borrowCollection.find(query).toArray();
+      res.send(result);
+
+    })
+    app.post('/borrowings', async(req, res) => {
+      const borrowing = req.body;
+      console.log(borrowing.email)
+      const result = await borrowCollection.insertOne(borrowing);
+      res.send(result);
+    })
+
+    // Delete section 
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
