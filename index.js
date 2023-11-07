@@ -75,7 +75,6 @@ async function run() {
     // borrow collection 
 
     app.get('/borrowings', async(req, res) => {
-      console.log(req.query.email);
       let query = {};
       if(req.query?.email){
         query = { email: req.query.email } 
@@ -86,12 +85,18 @@ async function run() {
     })
     app.post('/borrowings', async(req, res) => {
       const borrowing = req.body;
-      console.log(borrowing.email)
       const result = await borrowCollection.insertOne(borrowing);
       res.send(result);
     })
 
     // Delete section 
+
+    app.delete('/borrowings/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await borrowCollection.deleteOne(query);
+      res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
