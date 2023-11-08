@@ -9,7 +9,8 @@ const port = process.env.PORT || 5000;
 
 app.use(cors({
   origin: [
-    'http://localhost:5173'
+    'https://booklibrary-eac9c.web.app',
+    'https://booklibrary-eac9c.firebaseapp.com'
   ],
   credentials: true
 }));
