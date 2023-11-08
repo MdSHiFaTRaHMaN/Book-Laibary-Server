@@ -16,10 +16,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// bookLibrary
-// GYX9cLp0deY6EgY1
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.i8vh9qz.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,23 +27,23 @@ const client = new MongoClient(uri, {
   }
 });
 
-const logger = (req, res, next) =>{
+const logger = (req, res, next) => {
   console.log(req.method, req.url)
   next();
 }
 
-const verifyToken = (req, res, next) =>{
+const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
-  if(!token){
-    return res.status(401).send({message: 'unauthorized access'})
-}
-jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, (err, decoded) =>{
-    if(err){
-        return res.status(401).send({message: 'unauthorized access'})
+  if (!token) {
+    return res.status(401).send({ message: 'unauthorized access' })
+  }
+  jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: 'unauthorized access' })
     }
     req.user = decoded;
     next();
-})
+  })
 }
 
 async function run() {
@@ -60,22 +56,22 @@ async function run() {
 
     // JWT related api 
 
-    app.post('/jwt',logger, async(req, res) => {
+    app.post('/jwt', logger, async (req, res) => {
       const user = req.body;
       console.log('user for token', user);
-      const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, {expiresIn: '1h'});
+      const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '1h' });
       res.cookie('token', token, {
         httpOnly: true,
         secure: true,
         sameSite: 'none'
       })
-      .send({success: true});
+        .send({ success: true });
     })
 
-    app.post('/logout', async(req, res) =>{
+    app.post('/logout', async (req, res) => {
       const user = req.body;
-      console.log('loguot',user)
-      res.clearCookie('token', {maxAge: 0}).send({success: true})
+      console.log('loguot', user)
+      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
     })
 
     // book service reltate api 
@@ -119,23 +115,22 @@ async function run() {
       const result = await bookCollection.updateOne(filter, book, options);
       res.send(result);
     })
-  
+
     // borrow collection 
 
-    app.get('/borrowings',logger, verifyToken, async(req, res) => {
-      console.log("coooooool", req.user)
-      if(req.user.email !== req.query.email){
-        return res.status(403).send({message: 'forbidden access'})
-    }
+    app.get('/borrowings', logger, verifyToken, async (req, res) => {
+      if (req.user.email !== req.query.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
       let query = {};
-      if(req.query?.email){
-        query = { email: req.query.email } 
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
       const result = await borrowCollection.find(query).toArray();
       res.send(result);
 
     })
-    app.post('/borrowings', async(req, res) => {
+    app.post('/borrowings', async (req, res) => {
       const borrowing = req.body;
       const result = await borrowCollection.insertOne(borrowing);
       res.send(result);
